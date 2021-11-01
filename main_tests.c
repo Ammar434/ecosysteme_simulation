@@ -5,14 +5,15 @@
 #include <time.h>
 #include "ecosys.h"
 
-#define NB_PROIES 20
-#define NB_PREDATEURS 20
+#define NB_PROIES 1
+#define NB_PREDATEURS 0
 
 int main(void)
 {
-  srand(time(NULL));
+  //srand(time(NULL));
   Animal *liste_proie = NULL;
   Animal *liste_predateur = NULL;
+
   for (int i = 0; i < NB_PROIES; i++)
   {
     int x = rand() % SIZE_X;
@@ -32,8 +33,17 @@ int main(void)
     printf("Bon nombre\n");
   else
     printf("Mauvais nombre\n");
+  liste_proie->x = 0;
+  liste_proie->y = 0;
+  printf("%d\n", compte_animal_rec(liste_proie));
   afficher_ecosys(liste_proie, liste_predateur);
-  enlever_animal(&liste_proie, liste_proie->suivant);
+  //enlever_animal(&liste_proie, liste_proie);
+
+  liste_proie->dir[0] = 1;
+  liste_proie->dir[1] = -1;
+  bouger_animaux(liste_proie);
+  afficher_ecosys(liste_proie, liste_predateur);
+
   liberer_liste_animaux(liste_proie);
   liberer_liste_animaux(liste_predateur);
   return 0;

@@ -41,28 +41,29 @@ void enlever_animal(Animal **liste, Animal *animal)
   Animal *to_find;
   if (*liste != NULL)
   {
-    if ((*liste)->x != animal->x && (*liste)->y != animal->y)
+    if ((*liste)->x == animal->x && (*liste)->y == animal->y)
     {
       to_find = *liste;
       *liste = (*liste)->suivant;
       free(to_find);
     }
-    return;
-  }
-  prev = *liste;
-  to_find = (*liste)->suivant;
-  while (to_find)
-  {
-    if (to_find->x = animal->x && to_find->y == animal->y)
+    else
     {
-      prev->suivant = to_find->suivant;
-      free(to_find);
-      break;
+      prev = *liste;
+      to_find = (*liste)->suivant;
+      while (to_find)
+      {
+        if ((to_find)->x = animal->x && to_find->y == animal->y)
+        {
+          prev->suivant = to_find->suivant;
+          free(to_find);
+          break;
+        }
+        prev = to_find;
+        to_find = to_find->suivant;
+      }
     }
-    prev = to_find;
-    to_find = to_find->suivant;
   }
-  return;
 }
 
 /* A Faire. Part 1, exercice 5, question 2 */
@@ -119,7 +120,7 @@ void afficher_ecosys(Animal *liste_proie, Animal *liste_predateur)
   while (liste_proie)
   {
     Animal *tmp = liste_proie->suivant;
-    ecosys[liste_proie->x][liste_proie->y] = '*';
+    ecosys[liste_proie->x][liste_proie->y] = 'H';
     liste_proie = tmp;
   }
 
@@ -127,23 +128,23 @@ void afficher_ecosys(Animal *liste_proie, Animal *liste_predateur)
   while (liste_predateur)
   {
     Animal *tmp = liste_predateur->suivant;
-    ecosys[liste_predateur->x][liste_predateur->y] = '@';
+    ecosys[liste_predateur->x][liste_predateur->y] = 'C';
     liste_predateur = tmp;
   }
 
   /* on affiche le tableau */
-  for (j = 0; j <= SIZE_Y; j++)
+  for (j = 0; j <= SIZE_Y + 1; j++)
   {
-    for (i = 0; i <= SIZE_X; i++)
+    for (i = 0; i <= SIZE_X + 1; i++)
     {
-      if ((i == 0 && j == 0) || (i == 0 && j == SIZE_Y) || (i == SIZE_X && j == SIZE_Y) || (i == SIZE_X && j == 0))
+      if ((i == 0 && j == 0) || (i == 0 && j == SIZE_Y + 1) || (i == SIZE_X + 1 && j == SIZE_Y + 1) || (i == SIZE_X + 1 && j == 0))
         printf("+");
-      else if ((i == 0 && j < SIZE_Y) || (i == SIZE_X && j < SIZE_Y))
+      else if ((i == 0 && j < SIZE_Y + 2) || (i == SIZE_X + 1 && j < SIZE_Y + 2))
         printf("|");
-      else if ((i != 0 && j == 0) || (i != 0 && j == SIZE_Y))
+      else if ((i != 0 && j == 0) || (i != 0 && j == SIZE_Y + 1))
         printf("-");
       else
-        printf("%c", ecosys[i][j]);
+        printf("%c", ecosys[i - 1][j - 1]);
     }
     printf("\n");
   }
@@ -155,11 +156,36 @@ void clear_screen()
 }
 
 /* PARTIE 2*/
-
+float p_ch_dir = 0.01;
+float p_reproduce_proie = 0.4;
+float p_reproduce_predateur = 0.5;
+int temps_repousse_herbe = -15;
 /* Part 2. Exercice 4, question 1 */
 void bouger_animaux(Animal *la)
 {
-  /*A Completer*/
+  while (la)
+  {
+    if ((float)rand() / (float)RAND_MAX < p_ch_dir)
+    {
+      la->dir[0] = rand() % 3 - 1;
+      la->dir[1] = rand() % 3 - 1;
+    }
+
+    if (la->x + la->dir[1] >= SIZE_X)
+      la->x = 0;
+    else if (la->x + la->dir[1] < 0)
+      la->x = SIZE_X - 1;
+    else if (la->y == 0 && la->dir[0] > 0)
+      la->y = SIZE_Y - 1;
+    else if (la->y + la->dir[1] >= SIZE_Y)
+      la->y = 0;
+    else
+    {
+      la->x = la->x + la->dir[1];
+      la->y = la->y - la->dir[0];
+    }
+    la = la->suivant;
+  }
 }
 
 /* Part 2. Exercice 4, question 3 */

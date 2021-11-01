@@ -1,7 +1,7 @@
 CFLAGS = -g -Wall 
 CC = gcc
 
-PROGRAMS =   tests_ecosys ecosys
+PROGRAMS =  tests_ecosys main_ecosys ecosys
 
 .PHONY:	all clean
 

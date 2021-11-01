@@ -1,8 +1,8 @@
 #ifndef _ECOSYS_H_
 #define _ECOSYS_H_
 
-#define SIZE_X 20
-#define SIZE_Y 20
+#define SIZE_X 3
+#define SIZE_Y 3
 
 typedef struct _animal
 {
@@ -30,5 +30,10 @@ void rafraichir_proies(Animal **liste_proie, int monde[SIZE_X][SIZE_Y]);
 void rafraichir_monde(int monde[SIZE_X][SIZE_Y]);
 
 void clear_screen();
+
+extern float p_ch_dir; //probabilte de changer de direction de dsplacement
+extern float p_reproduce_proie;
+extern float p_reproduce_predateur;
+extern int temps_repousse_herbe;
 
 #endif
