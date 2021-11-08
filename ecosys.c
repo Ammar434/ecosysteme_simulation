@@ -156,48 +156,102 @@ void clear_screen()
 }
 
 /* PARTIE 2*/
-float p_ch_dir = 0.01;
-float p_reproduce_proie = 0.4;
-float p_reproduce_predateur = 0.5;
-int temps_repousse_herbe = -15;
 /* Part 2. Exercice 4, question 1 */
+void move(Animal *la)
+{
+  if (la->x == 0 && la->y == 0 && la->dir[0] >= 1 && la->dir[1] <= -1)
+  {
+    la->x = SIZE_X - 1;
+    la->y = SIZE_Y - 1;
+  }
+  else if (la->x == SIZE_X - 1 && la->y == 0 && la->dir[0] >= 1 && la->dir[1] >= 1)
+  {
+    la->x = 0;
+    la->y = SIZE_Y - 1;
+  }
+  else if (la->x == 0 && la->y == SIZE_Y - 1 && la->dir[0] <= -1 && la->dir[1] <= -1)
+  {
+    la->x = SIZE_X - 1;
+    la->y = 0;
+  }
+  else if (la->x == SIZE_X - 1 && la->y == SIZE_Y - 1 && la->dir[0] <= -1 && la->dir[1] >= 1)
+  {
+    la->x = 0;
+    la->y = 0;
+  }
+  else if (la->x + la->dir[1] >= SIZE_X)
+    la->x = 0;
+  else if (la->x + la->dir[1] < 0)
+    la->x = SIZE_X - 1;
+  else if (la->y == 0 && la->dir[0] > 0)
+    la->y = SIZE_Y - 1;
+  else if (la->y + la->dir[1] >= SIZE_Y)
+    la->y = 0;
+  else
+  {
+    la->x = la->x + la->dir[1];
+    la->y = la->y - la->dir[0];
+  }
+}
+
+void change_direction(Animal *la)
+{
+  if ((float)rand() / (float)RAND_MAX < p_ch_dir)
+  {
+    la->dir[0] = rand() % 3 - 1;
+    la->dir[1] = rand() % 3 - 1;
+  }
+}
+
 void bouger_animaux(Animal *la)
 {
-  while (la)
+  Animal *liste_debut = la;
+  while (liste_debut)
   {
-    if ((float)rand() / (float)RAND_MAX < p_ch_dir)
-    {
-      la->dir[0] = rand() % 3 - 1;
-      la->dir[1] = rand() % 3 - 1;
-    }
-
-    if (la->x + la->dir[1] >= SIZE_X)
-      la->x = 0;
-    else if (la->x + la->dir[1] < 0)
-      la->x = SIZE_X - 1;
-    else if (la->y == 0 && la->dir[0] > 0)
-      la->y = SIZE_Y - 1;
-    else if (la->y + la->dir[1] >= SIZE_Y)
-      la->y = 0;
-    else
-    {
-      la->x = la->x + la->dir[1];
-      la->y = la->y - la->dir[0];
-    }
-    la = la->suivant;
+    change_direction(liste_debut);
+    move(liste_debut);
+    liste_debut = liste_debut->suivant;
   }
 }
 
 /* Part 2. Exercice 4, question 3 */
 void reproduce(Animal **liste_animal, float p_reproduce)
 {
-  /*A Completer*/
+  Animal *liste_debut = *liste_animal;
+  while (*liste_animal)
+  {
+    if ((float)rand() / (float)RAND_MAX < p_reproduce)
+    {
+      ajouter_animal((*liste_animal)->x, (*liste_animal)->y, (*liste_animal)->energie / 2, &liste_debut);
+      (*liste_animal)->energie = (*liste_animal)->energie / 2;
+    }
+    (*liste_animal) = (*liste_animal)->suivant;
+  }
+  *liste_animal = liste_debut;
 }
 
 /* Part 2. Exercice 6, question 1 */
 void rafraichir_proies(Animal **liste_proie, int monde[SIZE_X][SIZE_Y])
 {
-  /*A Completer*/
+  Animal *liste_debut = *liste_proie;
+  bouger_animaux(*liste_proie);
+
+  while (*liste_proie != NULL)
+  {
+    (*liste_proie)->energie--;
+    //Manger
+    if (monde[(*liste_proie)->x][(*liste_proie)->y] > 0)
+    {
+      (*liste_proie)->energie = (*liste_proie)->energie + monde[(*liste_proie)->x][(*liste_proie)->y];
+      monde[(*liste_proie)->x][(*liste_proie)->y] = temps_repousse_herbe;
+    }
+    //Enleve les morts
+    if ((*liste_proie)->energie < 0)
+      enlever_animal(&liste_debut, (*liste_proie));
+    (*liste_proie) = (*liste_proie)->suivant;
+  }
+  reproduce(&liste_debut, 1);
+  *liste_proie = liste_debut;
 }
 
 /* Part 2. Exercice 7, question 1 */
@@ -217,6 +271,22 @@ void rafraichir_predateurs(Animal **liste_predateur, Animal **liste_proie)
 /* Part 2. Exercice 5, question 2 */
 void rafraichir_monde(int monde[SIZE_X][SIZE_Y])
 {
+  for (int i = 0; i < SIZE_X; i++)
+  {
+    for (int j = 0; j < SIZE_Y; j++)
+    {
+      monde[i][j] = monde[i][j] + 1;
+    }
+  }
+}
 
-  /*A Completer*/
+void init_tab(int tab[SIZE_X][SIZE_Y], int value)
+{
+  for (int i = 0; i < SIZE_X; i++)
+  {
+    for (int j = 0; j < SIZE_Y; j++)
+    {
+      tab[i][j] = 0;
+    }
+  }
 }

@@ -1,15 +1,15 @@
 CFLAGS = -g -Wall 
 CC = gcc
 
-PROGRAMS =  tests_ecosys main_ecosys ecosys
-
-.PHONY:	all clean
+PROGRAMS =  main_ecosys ecosys
 
 all: $(PROGRAMS)
 
-tests_ecosys: ecosys.o main_tests.o
+main_ecosys: ecosys.o main_ecosys.o
 	$(CC) -o $@ $(CFLAGS) $^
 
+tests_ecosys: ecosys.o main_tests.o
+	$(CC) -o $@ $(CFLAGS) $^
 
 ecosys: ecosys.o main_ecosys.o
 	$(CC) -o $@ $(CFLAGS) $^
@@ -27,3 +27,5 @@ main_ecosys.o: main_ecosys.c
 
 clean:
 	rm -f *.o *~ $(PROGRAMS)
+
+.PHONY:	all clean
