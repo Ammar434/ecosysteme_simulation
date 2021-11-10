@@ -1,4 +1,4 @@
-CFLAGS = -g -Wall 
+CFLAGS = -g3  -Wall 
 CC = gcc
 
 PROGRAMS =  main_ecosys ecosys
