@@ -7,14 +7,14 @@
 #include <strings.h>
 #include "ecosys.h"
 
-#define NB_PROIES 30
-#define NB_PREDATEURS 10
+#define NB_PROIES 100
+#define NB_PREDATEURS 100
 #define T_WAIT 40000
-
+//0.01  0.34  0.62   -0.1
 float p_ch_dir = 0.01;
-float p_reproduce_proie = 0.4;
-float p_reproduce_predateur = 0.5;
-int temps_repousse_herbe = -10;
+float p_reproduce_proie = 0.25;
+float p_reproduce_predateur = 0.62;
+int temps_repousse_herbe = -5;
 
 int main(void)
 {
@@ -61,7 +61,7 @@ int main(void)
     rafraichir_predateurs(&liste_predateur, &liste_proie);
     rafraichir_proies(&liste_proie, tab_herbe);
 
-    sleep(1);
+    sleep(0.2);
     clear_screen();
     fprintf(fichier, "%d %d %d\n", k, i, j);
     printf("Proie %d\n", i);
