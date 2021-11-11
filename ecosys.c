@@ -41,7 +41,7 @@ void enlever_animal(Animal **liste, Animal *animal)
   Animal *to_find;
   if (*liste != NULL)
   {
-    if ((*liste)->x == animal->x && (*liste)->y == animal->y)
+    if ((*liste)->x == animal->x && (*liste)->y == animal->y && (*liste)->energie == animal->energie)
     {
       to_find = *liste;
       *liste = (*liste)->suivant;
@@ -53,7 +53,7 @@ void enlever_animal(Animal **liste, Animal *animal)
       to_find = (*liste)->suivant;
       while (to_find)
       {
-        if ((to_find)->x = animal->x && to_find->y == animal->y)
+        if ((to_find)->x = animal->x && to_find->y == animal->y && (*liste)->energie == animal->energie)
         {
           prev->suivant = to_find->suivant;
           free(to_find);
@@ -190,7 +190,7 @@ void move(Animal *la)
     if (la->y - la->dir[0] % SIZE_Y < 0)
       la->y = SIZE_Y - la->dir[0] % SIZE_Y;
     else
-      la->y = la->y + la->dir[0] % SIZE_Y;
+      la->y = la->y - la->dir[0] % SIZE_Y;
   }
   else //Mouvement vers le bas
   {
@@ -228,7 +228,7 @@ void reproduce(Animal **liste_animal, float p_reproduce)
   {
     if ((float)rand() / (float)RAND_MAX < p_reproduce)
     {
-      ajouter_animal(liste_debut->x, liste_debut->y, liste_debut->energie / 2, &liste_debut);
+      ajouter_animal(liste_debut->x, liste_debut->y, liste_debut->energie / 2, liste_animal);
       liste_debut->energie = liste_debut->energie / 2;
     }
     liste_debut = liste_debut->suivant;
@@ -239,25 +239,57 @@ void reproduce(Animal **liste_animal, float p_reproduce)
 void rafraichir_proies(Animal **liste_proie, int monde[SIZE_X][SIZE_Y])
 {
   Animal *liste_debut = *liste_proie;
-  bouger_animaux(*liste_proie);
 
-  while (liste_debut)
+  if ((*liste_proie) != NULL)
   {
-    //Enleve les morts
+    bouger_animaux(liste_debut);
 
-    liste_debut->energie = liste_debut->energie - 1.0;
-    // Manger
-    if (monde[liste_debut->x][liste_debut->y] > 0)
+    while (liste_debut)
     {
-      liste_debut->energie = liste_debut->energie + monde[liste_debut->x][liste_debut->y];
-      monde[liste_debut->x][liste_debut->y] = temps_repousse_herbe;
-    }
-    if (liste_debut->energie <= 0.0)
-      enlever_animal(liste_proie, liste_debut);
+      liste_debut->energie = liste_debut->energie - 1.0;
 
-    liste_debut = liste_debut->suivant;
+      // Manger
+      if (monde[liste_debut->x][liste_debut->y] > 0)
+      {
+        liste_debut->energie = liste_debut->energie + monde[liste_debut->x][liste_debut->y];
+        monde[liste_debut->x][liste_debut->y] = temps_repousse_herbe;
+      }
+
+      liste_debut = liste_debut->suivant;
+    }
+    // A optimiser
+    Animal *aSupprimer;
+    Animal *precedent;
+    Animal *n;
+    while (*liste_proie != NULL && (*liste_proie)->energie <= 0)
+    {
+      aSupprimer = *liste_proie;
+      *liste_proie = (*liste_proie)->suivant;
+      free(aSupprimer);
+    }
+    if (*liste_proie != NULL)
+    {
+      precedent = *liste_proie;
+      n = precedent->suivant;
+      while (n != NULL)
+      {
+        while (n != NULL && n->energie <= 0)
+        {
+          aSupprimer = n;
+          n = n->suivant;
+          precedent->suivant = n;
+          free(aSupprimer);
+        }
+        if (n != NULL)
+        {
+          precedent = n;
+          n = n->suivant;
+        }
+      }
+    }
+
+    reproduce(liste_proie, p_reproduce_proie);
   }
-  // reproduce(liste_proie, p_reproduce_proie);
 }
 
 /* Part 2. Exercice 7, question 1 */
@@ -276,23 +308,56 @@ Animal *animal_en_XY(Animal *l, int x, int y)
 void rafraichir_predateurs(Animal **liste_predateur, Animal **liste_proie)
 {
   Animal *liste_debut = *liste_predateur;
-  bouger_animaux(*liste_predateur);
-  while (liste_debut)
+
+  if ((*liste_predateur) != NULL)
   {
-    liste_debut->energie = liste_debut->energie - 1.0;
-    //Manger
-    Animal *animalAManger = animal_en_XY(*liste_proie, liste_debut->x, liste_debut->y);
-    if (animalAManger != NULL)
+    bouger_animaux(liste_debut);
+    while (liste_debut)
     {
-      liste_debut->energie = liste_debut->energie + animalAManger->energie;
-      animalAManger->energie = 0;
+      liste_debut->energie = liste_debut->energie - 1.0;
+
+      // Manger
+      Animal *animalAManger = animal_en_XY(*liste_proie, liste_debut->x, liste_debut->y);
+      if (animalAManger != NULL)
+      {
+        liste_debut->energie = liste_debut->energie + animalAManger->energie;
+        animalAManger->energie = 0;
+      }
+      //Enleve les morts
+
+      liste_debut = liste_debut->suivant;
     }
-    //Enleve les morts
-    if (liste_debut->energie <= 0.0)
-      enlever_animal(liste_predateur, liste_debut);
-    liste_debut = liste_debut->suivant;
+    Animal *aSupprimer;
+    Animal *precedent;
+    Animal *n;
+    while (*liste_predateur != NULL && (*liste_predateur)->energie <= 0)
+    {
+      aSupprimer = *liste_predateur;
+      *liste_predateur = (*liste_predateur)->suivant;
+      free(aSupprimer);
+    }
+    if (*liste_predateur != NULL)
+    {
+      precedent = *liste_predateur;
+      n = precedent->suivant;
+      while (n != NULL)
+      {
+        while (n != NULL && n->energie <= 0)
+        {
+          aSupprimer = n;
+          n = n->suivant;
+          precedent->suivant = n;
+          free(aSupprimer);
+        }
+        if (n != NULL)
+        {
+          precedent = n;
+          n = n->suivant;
+        }
+      }
+    }
+    reproduce(liste_predateur, p_reproduce_predateur);
   }
-  // reproduce(liste_predateur, p_reproduce_predateur);
 }
 
 /* Part 2. Exercice 5, question 2 */
@@ -303,6 +368,7 @@ void rafraichir_monde(int monde[SIZE_X][SIZE_Y])
     for (int j = 0; j < SIZE_Y; j++)
     {
       monde[i][j] = monde[i][j] + 1;
+      // printf("herbe dispo %d\n", monde[i][j]);
     }
   }
 }

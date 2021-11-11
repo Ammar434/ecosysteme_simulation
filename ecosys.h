@@ -1,8 +1,8 @@
 #ifndef _ECOSYS_H_
 #define _ECOSYS_H_
 
-#define SIZE_X 20
-#define SIZE_Y 20
+#define SIZE_X 1000
+#define SIZE_Y 1000
 
 typedef struct _animal
 {
