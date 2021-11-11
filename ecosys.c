@@ -53,7 +53,7 @@ void enlever_animal(Animal **liste, Animal *animal)
       to_find = (*liste)->suivant;
       while (to_find)
       {
-        if ((to_find)->x = animal->x && to_find->y == animal->y && (*liste)->energie == animal->energie)
+        if ((to_find->x = animal->x && to_find->y == animal->y) && (*liste)->energie == animal->energie)
         {
           prev->suivant = to_find->suivant;
           free(to_find);
@@ -66,6 +66,38 @@ void enlever_animal(Animal **liste, Animal *animal)
   }
 }
 
+void enlever_animal_plus_energie(Animal **liste)
+{
+  Animal *aSupprimer;
+  Animal *precedent;
+  Animal *n;
+  while (*liste != NULL && (*liste)->energie <= 0)
+  {
+    aSupprimer = *liste;
+    *liste = (*liste)->suivant;
+    free(aSupprimer);
+  }
+  if (*liste != NULL)
+  {
+    precedent = *liste;
+    n = precedent->suivant;
+    while (n != NULL)
+    {
+      while (n != NULL && n->energie <= 0)
+      {
+        aSupprimer = n;
+        n = n->suivant;
+        precedent->suivant = n;
+        free(aSupprimer);
+      }
+      if (n != NULL)
+      {
+        precedent = n;
+        n = n->suivant;
+      }
+    }
+  }
+}
 /* A Faire. Part 1, exercice 5, question 2 */
 Animal *liberer_liste_animaux(Animal *liste)
 {
@@ -104,8 +136,6 @@ void afficher_ecosys(Animal *liste_proie, Animal *liste_predateur)
 {
   unsigned int i, j;
   char ecosys[SIZE_X][SIZE_Y];
-  int nbpred = 0, nbproie = 0;
-  Animal *pa = NULL;
 
   /* on initialise le tableau */
   for (i = 0; i < SIZE_X; i++)
@@ -257,36 +287,8 @@ void rafraichir_proies(Animal **liste_proie, int monde[SIZE_X][SIZE_Y])
 
       liste_debut = liste_debut->suivant;
     }
-    // A optimiser
-    Animal *aSupprimer;
-    Animal *precedent;
-    Animal *n;
-    while (*liste_proie != NULL && (*liste_proie)->energie <= 0)
-    {
-      aSupprimer = *liste_proie;
-      *liste_proie = (*liste_proie)->suivant;
-      free(aSupprimer);
-    }
-    if (*liste_proie != NULL)
-    {
-      precedent = *liste_proie;
-      n = precedent->suivant;
-      while (n != NULL)
-      {
-        while (n != NULL && n->energie <= 0)
-        {
-          aSupprimer = n;
-          n = n->suivant;
-          precedent->suivant = n;
-          free(aSupprimer);
-        }
-        if (n != NULL)
-        {
-          precedent = n;
-          n = n->suivant;
-        }
-      }
-    }
+    // A optimiser - Pas efficace
+    enlever_animal_plus_energie(liste_proie);
 
     reproduce(liste_proie, p_reproduce_proie);
   }
@@ -315,7 +317,6 @@ void rafraichir_predateurs(Animal **liste_predateur, Animal **liste_proie)
     while (liste_debut)
     {
       liste_debut->energie = liste_debut->energie - 1.0;
-
       // Manger
       Animal *animalAManger = animal_en_XY(*liste_proie, liste_debut->x, liste_debut->y);
       if (animalAManger != NULL)
@@ -323,39 +324,10 @@ void rafraichir_predateurs(Animal **liste_predateur, Animal **liste_proie)
         liste_debut->energie = liste_debut->energie + animalAManger->energie;
         animalAManger->energie = 0;
       }
-      //Enleve les morts
 
       liste_debut = liste_debut->suivant;
     }
-    Animal *aSupprimer;
-    Animal *precedent;
-    Animal *n;
-    while (*liste_predateur != NULL && (*liste_predateur)->energie <= 0)
-    {
-      aSupprimer = *liste_predateur;
-      *liste_predateur = (*liste_predateur)->suivant;
-      free(aSupprimer);
-    }
-    if (*liste_predateur != NULL)
-    {
-      precedent = *liste_predateur;
-      n = precedent->suivant;
-      while (n != NULL)
-      {
-        while (n != NULL && n->energie <= 0)
-        {
-          aSupprimer = n;
-          n = n->suivant;
-          precedent->suivant = n;
-          free(aSupprimer);
-        }
-        if (n != NULL)
-        {
-          precedent = n;
-          n = n->suivant;
-        }
-      }
-    }
+    enlever_animal_plus_energie(liste_predateur);
     reproduce(liste_predateur, p_reproduce_predateur);
   }
 }
