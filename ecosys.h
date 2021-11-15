@@ -1,8 +1,8 @@
 #ifndef _ECOSYS_H_
 #define _ECOSYS_H_
 
-#define SIZE_X 20
-#define SIZE_Y 20
+#define SIZE_X 50
+#define SIZE_Y 50
 
 typedef struct _animal
 {
@@ -35,6 +35,7 @@ void move(Animal *la);
 void change_direction(Animal *la);
 void reproduce(Animal **liste_animal, float p_reproduce);
 void init_tab(int tab[SIZE_X][SIZE_Y], int value);
+void enlever_animal_plus_energie(Animal **liste);
 
 extern float p_ch_dir; //probabilte de changer de direction de dsplacement
 extern float p_reproduce_proie;

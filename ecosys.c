@@ -41,7 +41,7 @@ void enlever_animal(Animal **liste, Animal *animal)
   Animal *to_find;
   if (*liste != NULL)
   {
-    if ((*liste)->x == animal->x && (*liste)->y == animal->y)
+    if ((*liste)->x == animal->x && (*liste)->y == animal->y && (*liste)->energie == animal->energie)
     {
       to_find = *liste;
       *liste = (*liste)->suivant;
@@ -53,7 +53,7 @@ void enlever_animal(Animal **liste, Animal *animal)
       to_find = (*liste)->suivant;
       while (to_find)
       {
-        if ((to_find)->x = animal->x && to_find->y == animal->y)
+        if ((to_find->x = animal->x && to_find->y == animal->y) && (*liste)->energie == animal->energie)
         {
           prev->suivant = to_find->suivant;
           free(to_find);
@@ -66,6 +66,38 @@ void enlever_animal(Animal **liste, Animal *animal)
   }
 }
 
+void enlever_animal_plus_energie(Animal **liste)
+{
+  Animal *aSupprimer;
+  Animal *precedent;
+  Animal *n;
+  while (*liste != NULL && (*liste)->energie <= 0)
+  {
+    aSupprimer = *liste;
+    *liste = (*liste)->suivant;
+    free(aSupprimer);
+  }
+  if (*liste != NULL)
+  {
+    precedent = *liste;
+    n = precedent->suivant;
+    while (n != NULL)
+    {
+      while (n != NULL && n->energie <= 0)
+      {
+        aSupprimer = n;
+        n = n->suivant;
+        precedent->suivant = n;
+        free(aSupprimer);
+      }
+      if (n != NULL)
+      {
+        precedent = n;
+        n = n->suivant;
+      }
+    }
+  }
+}
 /* A Faire. Part 1, exercice 5, question 2 */
 Animal *liberer_liste_animaux(Animal *liste)
 {
@@ -104,8 +136,6 @@ void afficher_ecosys(Animal *liste_proie, Animal *liste_predateur)
 {
   unsigned int i, j;
   char ecosys[SIZE_X][SIZE_Y];
-  int nbpred = 0, nbproie = 0;
-  Animal *pa = NULL;
 
   /* on initialise le tableau */
   for (i = 0; i < SIZE_X; i++)
@@ -117,19 +147,27 @@ void afficher_ecosys(Animal *liste_proie, Animal *liste_predateur)
   }
 
   /* on ajoute les proies */
-  while (liste_proie)
+  if (liste_proie == NULL)
+    printf("Liste proie vide \n");
+  else
   {
-    Animal *tmp = liste_proie->suivant;
-    ecosys[liste_proie->x][liste_proie->y] = 'H';
-    liste_proie = tmp;
+    while (liste_proie != NULL)
+    {
+      ecosys[liste_proie->x][liste_proie->y] = 'H';
+      liste_proie = liste_proie->suivant;
+    }
   }
 
   /* on ajoute les predateurs */
-  while (liste_predateur)
+  if (liste_predateur == NULL)
+    printf("Liste predateur vide \n");
+  else
   {
-    Animal *tmp = liste_predateur->suivant;
-    ecosys[liste_predateur->x][liste_predateur->y] = 'C';
-    liste_predateur = tmp;
+    while (liste_predateur != NULL)
+    {
+      ecosys[liste_predateur->x][liste_predateur->y] = 'C';
+      liste_predateur = liste_predateur->suivant;
+    }
   }
 
   /* on affiche le tableau */
@@ -157,40 +195,39 @@ void clear_screen()
 
 /* PARTIE 2*/
 /* Part 2. Exercice 4, question 1 */
+
 void move(Animal *la)
 {
-  if (la->x == 0 && la->y == 0 && la->dir[0] >= 1 && la->dir[1] <= -1)
+  //Mouvement sur x
+  if (la->dir[1] >= 0) //Mouvement vers la gauche
   {
-    la->x = SIZE_X - 1;
-    la->y = SIZE_Y - 1;
+    if (la->x - la->dir[1] % SIZE_X < 0)
+      la->x = SIZE_X - la->dir[1] % SIZE_X;
+    else
+      la->x = la->x - la->dir[1] % SIZE_X;
   }
-  else if (la->x == SIZE_X - 1 && la->y == 0 && la->dir[0] >= 1 && la->dir[1] >= 1)
+  else //mouvement vers la droite
   {
-    la->x = 0;
-    la->y = SIZE_Y - 1;
+    if (la->x - la->dir[1] % SIZE_X >= SIZE_X)
+      la->x = -la->dir[1] % SIZE_X - 1;
+    else
+      la->x = la->x - la->dir[1] % SIZE_X;
   }
-  else if (la->x == 0 && la->y == SIZE_Y - 1 && la->dir[0] <= -1 && la->dir[1] <= -1)
+
+  //Mouvement sur y
+  if (la->dir[0] >= 0) // Mouvement vers le haut
   {
-    la->x = SIZE_X - 1;
-    la->y = 0;
+    if (la->y - la->dir[0] % SIZE_Y < 0)
+      la->y = SIZE_Y - la->dir[0] % SIZE_Y;
+    else
+      la->y = la->y - la->dir[0] % SIZE_Y;
   }
-  else if (la->x == SIZE_X - 1 && la->y == SIZE_Y - 1 && la->dir[0] <= -1 && la->dir[1] >= 1)
+  else //Mouvement vers le bas
   {
-    la->x = 0;
-    la->y = 0;
-  }
-  else if (la->x + la->dir[1] >= SIZE_X)
-    la->x = 0;
-  else if (la->x + la->dir[1] < 0)
-    la->x = SIZE_X - 1;
-  else if (la->y == 0 && la->dir[0] > 0)
-    la->y = SIZE_Y - 1;
-  else if (la->y + la->dir[1] >= SIZE_Y)
-    la->y = 0;
-  else
-  {
-    la->x = la->x + la->dir[1];
-    la->y = la->y - la->dir[0];
+    if (la->y - la->dir[0] % SIZE_Y >= SIZE_Y)
+      la->y = -la->dir[0] % SIZE_Y - 1;
+    else
+      la->y = la->y - la->dir[0] % SIZE_Y;
   }
 }
 
@@ -205,12 +242,11 @@ void change_direction(Animal *la)
 
 void bouger_animaux(Animal *la)
 {
-  Animal *liste_debut = la;
-  while (liste_debut)
+  while (la)
   {
-    change_direction(liste_debut);
-    move(liste_debut);
-    liste_debut = liste_debut->suivant;
+    change_direction(la);
+    move(la);
+    la = la->suivant;
   }
 }
 
@@ -218,54 +254,82 @@ void bouger_animaux(Animal *la)
 void reproduce(Animal **liste_animal, float p_reproduce)
 {
   Animal *liste_debut = *liste_animal;
-  while (*liste_animal)
+  while (liste_debut)
   {
     if ((float)rand() / (float)RAND_MAX < p_reproduce)
     {
-      ajouter_animal((*liste_animal)->x, (*liste_animal)->y, (*liste_animal)->energie / 2, &liste_debut);
-      (*liste_animal)->energie = (*liste_animal)->energie / 2;
+      ajouter_animal(liste_debut->x, liste_debut->y, liste_debut->energie / 2, liste_animal);
+      liste_debut->energie = liste_debut->energie / 2;
     }
-    (*liste_animal) = (*liste_animal)->suivant;
+    liste_debut = liste_debut->suivant;
   }
-  *liste_animal = liste_debut;
 }
 
 /* Part 2. Exercice 6, question 1 */
 void rafraichir_proies(Animal **liste_proie, int monde[SIZE_X][SIZE_Y])
 {
   Animal *liste_debut = *liste_proie;
-  bouger_animaux(*liste_proie);
 
-  while (*liste_proie != NULL)
+  if ((*liste_proie) != NULL)
   {
-    (*liste_proie)->energie--;
-    //Manger
-    if (monde[(*liste_proie)->x][(*liste_proie)->y] > 0)
+    bouger_animaux(liste_debut);
+
+    while (liste_debut)
     {
-      (*liste_proie)->energie = (*liste_proie)->energie + monde[(*liste_proie)->x][(*liste_proie)->y];
-      monde[(*liste_proie)->x][(*liste_proie)->y] = temps_repousse_herbe;
+      liste_debut->energie = liste_debut->energie - 1.0;
+
+      // Manger
+      if (monde[liste_debut->x][liste_debut->y] > 0)
+      {
+        liste_debut->energie = liste_debut->energie + monde[liste_debut->x][liste_debut->y];
+        monde[liste_debut->x][liste_debut->y] = temps_repousse_herbe;
+      }
+
+      liste_debut = liste_debut->suivant;
     }
-    //Enleve les morts
-    if ((*liste_proie)->energie < 0)
-      enlever_animal(&liste_debut, (*liste_proie));
-    (*liste_proie) = (*liste_proie)->suivant;
+    // A optimiser - Pas efficace
+    enlever_animal_plus_energie(liste_proie);
+
+    reproduce(liste_proie, p_reproduce_proie);
   }
-  reproduce(&liste_debut, 1);
-  *liste_proie = liste_debut;
 }
 
 /* Part 2. Exercice 7, question 1 */
 Animal *animal_en_XY(Animal *l, int x, int y)
 {
-  /*A Completer*/
-
+  while (l)
+  {
+    if (l->x == x && l->y == y)
+      return l;
+    l = l->suivant;
+  }
   return NULL;
 }
 
 /* Part 2. Exercice 7, question 2 */
 void rafraichir_predateurs(Animal **liste_predateur, Animal **liste_proie)
 {
-  /*A Completer*/
+  Animal *liste_debut = *liste_predateur;
+
+  if ((*liste_predateur) != NULL)
+  {
+    bouger_animaux(liste_debut);
+    while (liste_debut)
+    {
+      liste_debut->energie = liste_debut->energie - 1.0;
+      // Manger
+      Animal *animalAManger = animal_en_XY(*liste_proie, liste_debut->x, liste_debut->y);
+      if (animalAManger != NULL)
+      {
+        liste_debut->energie = liste_debut->energie + animalAManger->energie;
+        animalAManger->energie = 0;
+      }
+
+      liste_debut = liste_debut->suivant;
+    }
+    enlever_animal_plus_energie(liste_predateur);
+    reproduce(liste_predateur, p_reproduce_predateur);
+  }
 }
 
 /* Part 2. Exercice 5, question 2 */
@@ -276,10 +340,12 @@ void rafraichir_monde(int monde[SIZE_X][SIZE_Y])
     for (int j = 0; j < SIZE_Y; j++)
     {
       monde[i][j] = monde[i][j] + 1;
+      // printf("herbe dispo %d\n", monde[i][j]);
     }
   }
 }
 
+//On initialise un tableau !!!Fonction non obligatoire!!!
 void init_tab(int tab[SIZE_X][SIZE_Y], int value)
 {
   for (int i = 0; i < SIZE_X; i++)
